@@ -1,0 +1,7 @@
+git+https://github.com/SYSTRAN/faster-whisper.git
+click
+pyaudio
+SpeechRecognition
+grpcio
+grpcio-tools
+protobuf

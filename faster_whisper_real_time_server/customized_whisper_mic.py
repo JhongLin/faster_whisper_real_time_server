@@ -1,6 +1,7 @@
 import queue
 import threading
 import time
+import tkinter as tk
 import typing
 
 import grpc
@@ -15,11 +16,12 @@ import faster_whisper_transcription_pb2_grpc
 class CustomizedWhisperMic:
     def __init__(
         self,
-        energy,
-        pause,
-        dynamic_energy,
-        mic_index,
-        hallucinate_threshold,
+        energy: int,
+        pause: float,
+        dynamic_energy: bool,
+        mic_index: int,
+        hallucinate_threshold: int,
+        tkinter_output: bool,
     ):
         if mic_index is None:
             print('[INFO] No mic index provided, using default')
@@ -36,6 +38,7 @@ class CustomizedWhisperMic:
 
         self.hallucinate_threshold = hallucinate_threshold
         self.audio_queue = queue.Queue()
+        self.tkinter_output = tkinter_output
         # The following attributes are only used in local mode
         self.banned_results = None
         self.result_queue: None
@@ -82,8 +85,7 @@ class CustomizedWhisperMic:
             while True:
                 yield self.result_queue.get()
 
-        for predicted_text in pop_predicted_result():
-            print(predicted_text)
+        self._show_predicted_result(pop_predicted_result(), language)
 
     def _push_predicted_result(self) -> None:
         while True:
@@ -95,6 +97,31 @@ class CustomizedWhisperMic:
             predicted_text = ''.join(segment.text for segment in segments)
             if predicted_text not in self.banned_results:
                 self.result_queue.put_nowait(predicted_text)
+
+    def _show_predicted_result(self, result_iterator: typing.Iterable, language_code: str):
+        if not self.tkinter_output:
+            for predicted_text in result_iterator:
+                print(predicted_text)
+
+            return
+
+        window = tk.Tk()
+        max_lines = 9
+        window.title(f'Predicted result for {language_code}')
+        window.geometry('600x300')
+        window.attributes("-topmost", True)
+        text_widget = tk.Text(window, wrap=tk.WORD, font=('Arial', 20))
+        text_widget.pack(fill=tk.BOTH, expand=True)
+
+        def _listen_for_predicted_result():
+            for predicted_text in result_iterator:
+                text_widget.insert(tk.END, f'{predicted_text}\n')
+                lines = text_widget.get(1.0, tk.END).split('\n')
+                if len(lines) > max_lines:
+                    text_widget.delete(1.0, f'{len(lines)-max_lines+1}.0')
+
+        threading.Thread(target=_listen_for_predicted_result).start()
+        window.mainloop()
 
     def _transcribe_by_grpc(self, language: typing.Optional[str], grpc_address: typing.Optional[str]) -> None:
         if language is None:
@@ -113,8 +140,7 @@ class CustomizedWhisperMic:
                     yield faster_whisper_transcription_pb2.AudioData(ndarray_bytes=audio_ndarray.tobytes(), language=language)
 
             response_iterator = stub.StreamData(request_generator())
-            for response in response_iterator:
-                print(response.prediction)
+            self._show_predicted_result(response_iterator, language)
 
     def _get_audio_ndarray(self) -> typing.Optional[np.ndarray]:
         return self._get_audio_ndarray_from_raw_data(self._get_audio_raw_data())

@@ -15,6 +15,7 @@ from customized_whisper_mic import CustomizedWhisperMic
 @click.option('--mic_index', default=None, help='Mic index to use', type=int)
 @click.option('--list_devices', default=False, help='Flag to list devices', is_flag=True)
 @click.option('--hallucinate_threshold',default=400, help='Raise this to reduce hallucinations. Lower this to activate more often.', type=int)
+@click.option('--tkinter_output', default=False, help='Flag to use the tkinter as output window', is_flag=True)
 @click.option('--grpc_address', default=None, help='<ip_addr>:<port> or run locally by default', type=str)
 @click.option('--model', default=None, help='Model (`distil-large-v3` if en only)', type=click.Choice(['medium', 'large-v3', 'distil-large-v3']))
 @click.option('--device', default=None, help='Device', type=click.Choice(['cpu', 'cuda']))
@@ -27,6 +28,7 @@ def main(
     mic_index: typing.Optional[int],
     list_devices: bool,
     hallucinate_threshold: int,
+    tkinter_output: bool,
     grpc_address: typing.Optional[str],
     model: str,
     device: str,
@@ -45,6 +47,7 @@ def main(
         dynamic_energy=dynamic_energy,
         mic_index=mic_index,
         hallucinate_threshold=hallucinate_threshold,
+        tkinter_output=tkinter_output,
     )
 
     try:
