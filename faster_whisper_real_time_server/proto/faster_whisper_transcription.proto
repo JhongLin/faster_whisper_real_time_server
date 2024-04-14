@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package faster_whisper_transcription;
+
+service FasterWhisperTranscription {
+  rpc StreamData (stream AudioData) returns (stream Transcription) {}
+}
+
+message AudioData {
+  bytes ndarray_bytes = 1;
+  string language = 2;
+}
+
+message Transcription {
+  string prediction = 1;
+}
