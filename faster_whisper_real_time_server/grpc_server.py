@@ -34,17 +34,19 @@ class WhisperMicServicer(faster_whisper_transcription_pb2_grpc.FasterWhisperTran
 @click.option('--model', default='large-v3', help='Model (`distil-large-v3` if en only)', type=click.Choice(['medium', 'large-v3', 'distil-large-v3']))
 @click.option('--device', default=('cuda' if torch.cuda.is_available() else 'cpu'), help='Device', type=click.Choice(['cpu', 'cuda']))
 @click.option('--precision', default='float16', help='Precision level', type=click.Choice(['int8', 'float16']))
+@click.option('--port_number', default=50021, help='The port number to listen', type=int)
 def serve(
     model: str,
     device: str,
     precision: str,
+    port_number: int,
 ):
     print(f'[INFO] Run in {device} on {model} model with {precision} precision.')
     global faster_whisper_model
     faster_whisper_model = WhisperModel(model_size_or_path=model, device=device, compute_type=precision)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     faster_whisper_transcription_pb2_grpc.add_FasterWhisperTranscriptionServicer_to_server(WhisperMicServicer(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port(f'[::]:{port_number}')
     server.start()
     server.wait_for_termination()
 
