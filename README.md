@@ -66,6 +66,6 @@ pip install --upgrade pip setuptools
 <!----><a name="available_models_and_languages"></a>
 ## Available models and languages
 
-- [models](https://github.com/SYSTRAN/faster-whisper/blob/main/faster_whisper/utils.py)
-- [language codes](https://github.com/SYSTRAN/faster-whisper/blob/main/faster_whisper/tokenizer.py)
+- [models](https://github.com/SYSTRAN/faster-whisper/blob/master/faster_whisper/utils.py)
+- [language codes](https://github.com/SYSTRAN/faster-whisper/blob/master/faster_whisper/tokenizer.py)
     - [codes mapping](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py)
